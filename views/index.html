@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatroom</title>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"
+        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <div class="mx-auto max-w-2xl p-4">
+        <div class="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl backdrop-blur"
+            hx-ext="ws" ws-connect="/ws">
+            <!-- Header -->
+            <div class="flex items-center gap-3 border-b border-slate-800 p-4">
+                <div
+                    class="grid h-10 w-10 place-content-center rounded-full bg-green-600 text-sm font-bold text-white shadow-lg">
+                    G
+                </div>
+                <div class="min-w-0">
+                    <h1 class="truncate text-lg font-semibold tracking-tight">
+                        Chatroom
+                    </h1>
+                    <div class="text-xs text-slate-400">
+                        Room:
+                        <span id="roomBadge"
+                            class="inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300 ring-1 ring-slate-700">
+                            chatroom
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="p-3">
+                <div id="messages" class="flex h-[65vh] flex-col gap-2 overflow-y-auto scroll-smooth"
+                    hx-swap="beforeend" aria-live="polite" aria-atomic="false"></div>
+            </div>
+
+            <!-- Divider -->
+            <div class="mx-3 h-px bg-slate-800"></div>
+
+            <!-- Composer -->
+            <div class="p-3">
+                <form id="form" ws-send autocomplete="off" class="grid grid-cols-12 gap-2">
+                    <input type="text" name="smt" id="nameInput" placeholder="Your name"
+                        class="col-span-12 sm:col-span-3 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none ring-0 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                        aria-label="Your name" />
+
+                    <input type="text" name="room" id="roomInput" placeholder="Room" value="chatroom"
+                        class="col-span-6 sm:col-span-3 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none ring-0 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                        aria-label="Room" />
+
+                    <input type="text" name="text" id="messageInput" placeholder="Type a message..." minlength="1"
+                        required
+                        class="col-span-9 sm:col-span-4 md:col-span-5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none ring-0 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                        aria-label="Message input" />
+
+                    <button type="submit" id="sendBtn"
+                        class="col-span-3 sm:col-span-2 inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-blue-600/25 transition focus:outline-none focus:ring-2 focus:ring-blue-500/40 disabled:cursor-not-allowed disabled:opacity-60">
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-3 text-center text-xs text-slate-500">
+            Powered by GO
+            <footer> Made by Dev Garp</footer>
+        </div>
+    </div>
+
+    <script>
+
+        function scrollMessagesToBottom() {
+            const el = document.getElementById('messages');
+            if (!el) return;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        document.addEventListener('htmx:afterSwap', function (evt) {
+            if (evt.detail && evt.detail.target && evt.detail.target.id === 'messages') {
+                scrollMessagesToBottom();
+            }
+        });
+
+
+        document.addEventListener('htmx:oobAfterSwap', function (evt) {
+            const target = (evt.detail && evt.detail.target) ? evt.detail.target : null;
+            if (target && target.id === 'messages') {
+                scrollMessagesToBottom();
+            }
+        });
+
+        // input focus + disable send when empty + update room badge ux focus
+        (function () {
+            const input = document.getElementById('messageInput');
+            const btn = document.getElementById('sendBtn');
+            const roomInput = document.getElementById('roomInput');
+            const roomBadge = document.getElementById('roomBadge');
+
+            function updateBtn() {
+                btn.disabled = !(input.value && input.value.trim());
+            }
+
+            function updateRoomBadge() {
+                if (roomBadge && roomInput) {
+                    const v = (roomInput.value || '').trim();
+                    roomBadge.textContent = v || 'chatroom';
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                if (input) input.focus();
+                updateBtn();
+                updateRoomBadge();
+            });
+
+            if (input) {
+                input.addEventListener('input', updateBtn);
+            }
+
+            if (roomInput) {
+                roomInput.addEventListener('input', updateRoomBadge);
+                roomInput.addEventListener('change', updateRoomBadge);
+            }
+
+            document.getElementById('form').addEventListener('submit', function () {
+                setTimeout(function () {
+                    input.value = '';
+                    updateBtn();
+                    input.focus();
+                }, 0);
+            });
+        })();
+    </script>
+</body>
+
+</html>

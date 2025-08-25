@@ -1,0 +1,9 @@
+<div id="messages" hx-swap-oob="beforeend">
+    <div class="message {{ .SelfClass }}" role="listitem">
+        <div class="bubble">
+            {{ if .Msg.ClientName }}<span class="name">{{ .Msg.ClientName }}</span>{{ end }}
+            <div class="text">{{ .Msg.Text }}</div>
+            {{ if .Msg.Timestamp }}<span class="time">{{ .Msg.Timestamp }}</span>{{ end }}
+        </div>
+    </div>
+</div>
