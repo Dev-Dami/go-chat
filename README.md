@@ -1,4 +1,4 @@
-# Real-Time Chat App With Go and HTMX
+# Real-Time Chat App in Go
 
 Welcome to the Real-Time Chat App! This simple application allows users to communicate with each other in real time.
 
